@@ -41,4 +41,16 @@ Important indepdent variables include how poor a patient is ("povertyPercent"), 
 ```{r}
 str(cancer_data)
 ```
+How is death_rate correlated to the important variables? This ScatterPlotMatrix might throw some light
+```{r}
+scatterplotMatrix(~ deathRate + povertyPercent + medIncome + PctPrivateCoverage + PctPublicCoverage, data = cancer_data)
+```
+A few preliminary observations show that deathRate is positively correlated to povertyPercent and PctPublicCoverage, while it is negatively correlated to medIncome and PctPrivateCoverage. This can be verified with the correlations below:
+```{r}
+#correlation of deathRate to important variables
+cor(cancer_data$deathRate, cancer_data$povertyPercent)
+cor(cancer_data$deathRate, cancer_data$medIncome)
+cor(cancer_data$deathRate, cancer_data$PctPrivateCoverage)
+cor(cancer_data$deathRate, cancer_data$PctPublicCoverage)
+```
 
