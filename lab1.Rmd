@@ -15,7 +15,7 @@ Lab 1 Cancer EDA
 ========================================================
 
 
-## Introduction (Just to kick things off)
+##1.  Introduction (Just to kick things off)
 This is an exploratory data analysis to examine the relationship between patient death rates caused by cancer versus various factors including the type of patient coverage, patient income levels and so on.
 The data analysis includes the following sections:
 1. Preliminary Dataset analysis
@@ -23,6 +23,12 @@ The data analysis includes the following sections:
 3. Conclusions that can be reasonably achieved
 4. Recommendations 
 5. Improvements to the Dataset
+
+
+First include library for scatterplots
+```{r}
+library(car)
+```
 
 
 ```{r load}
@@ -54,3 +60,29 @@ cor(cancer_data$deathRate, cancer_data$PctPrivateCoverage)
 cor(cancer_data$deathRate, cancer_data$PctPublicCoverage)
 ```
 
+There seems to be a high degree of correlation between income and deathRate. Is it possible that the deathRates are high because the cancer can be suppressable through treatment and the poorer people cannot afford it? Or is it because the cancer is incurable? We are not sure that this distinction can be reasonably figured out. But let's say that the cancer is curable - then there should be a correlation between deathRate and income. Let's see:
+```{r}
+plot (~ cancer_data$medIncome + cancer_data$deathRate, type = "h")
+```
+There seems to be a gradual drop in death rates for people with higher median incomes. However, there are definitely some outliers as we see a lot of spikes in the death rates in some cases. Are these related to incurable cancers? Are these related to the geography in some ways? How do we figure out?
+
+
+##2.  Problems with the Dataset
+Thomas/Nikita - am using this section to add any problems with the dataset. We have to figure out a coherent way to structure this analysis and I am fine with any way you suggest.
+
+a) How do we determine whether the deaths were caused because the cancer was undiagnosed? Or whether it was diagnosed and not cured because it was incurable? Or whether it was diagnosed and not cured because the patient couldn't afford it? Since everything is averaged out per county, there is no way of knowing. Perhaps in my mind, the biggest issue with this dataset is that it provides the summary data per geography, rather than the individual patient data itself. What we need is per patient data, not the summary data...perhaps we need to bring this up as the major problem. Thoughts?
+
+b) PctPrivateCoverage and PctPublicCoverage don't add up to 100%. So some people are covered both with private and public coverage or some don't have coverage at all. The numbers range from 65 to 131 when you add them up. 
+```{r}
+head(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage, 25)
+min(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
+max(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
+```
+
+c) The same problem exists with the race related information. It doesn't add up to 100%. 
+
+```{r}
+head(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace, 25)
+min(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
+max(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
+```
