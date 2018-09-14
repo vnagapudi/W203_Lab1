@@ -1,0 +1,44 @@
+---
+title: "w203_lab1_Cancer_EDA"
+author: "Nikita Nadkarni, Thomas Drage, Venkatesh Nagapudi"
+date: "September 14, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+W203 Statistics for Data Science
+========================================================
+Lab 1 Cancer EDA
+========================================================
+
+
+## Introduction (Just to kick things off)
+This is an exploratory data analysis to examine the relationship between patient death rates caused by cancer versus various factors including the type of patient coverage, patient income levels and so on.
+The data analysis includes the following sections:
+1. Preliminary Dataset analysis
+2. Problems with the Dataset
+3. Conclusions that can be reasonably achieved
+4. Recommendations 
+5. Improvements to the Dataset
+
+
+```{r load}
+cancer_data = read.csv("cancer.csv")
+```
+
+## List of variables in cancer data
+
+
+```{r}
+(list_of_varibles = objects(cancer_data))
+```
+A high level summary of cancer_data shows 3047 observations of 30 variables. The important dependent variable is the deathRate. A close second is the incidence rate of cancer, which is the "avgAnnCount". 
+Important indepdent variables include how poor a patient is ("povertyPercent"), whether he/she has Private or Public coverage ("PctPrivateCoverage", "PctPublicCoverage"), his/her race and so on. (need to add more)
+
+```{r}
+str(cancer_data)
+```
+
