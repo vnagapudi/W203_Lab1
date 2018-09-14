@@ -86,3 +86,40 @@ head(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer
 min(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
 max(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
 ```
+
+d) deathRate doesn't take into account the population of the county. Perhaps this is a huge problem. Maybe the data is not so bad if you find the actual % of population that died because of cancer and correlate it against other variables? A lot of the data so far that I gathered might be wrong if the main variable is not meaningful. Thoughts?
+
+```{r}
+#added new column into cancer_data
+cancer_data$pctDeathRate = cancer_data$deathRate/cancer_data$popEst2015
+```
+Also, how do we know that the deathRate data is for 2015?
+
+Let's see how pctDeathRate vs PcctPrivateCoverage looks now
+```{r}
+plot (~ jitter(cancer_data$PctPrivateCoverage,2) + jitter(cancer_data$pctDeathRate,2), type = "h")
+```
+How about the correlation between the two variables?
+```{r}
+cor(cancer_data$pctDeathRate, cancer_data$PctPrivateCoverage)
+```
+This shows very little correlation. (Nikita/Thomas - thoughts??)
+How about the correlation between pctDeathRates and PublicCoverage?
+```{r}
+cor(cancer_data$pctDeathRate, cancer_data$PctPublicCoverage)
+```
+This seems somewhat intuitive. Perhaps with public coverage, treatment is bad.
+
+How about median income?
+
+```{r}
+cor(cancer_data$pctDeathRate, cancer_data$medIncome)
+```
+A negative correlation that is as strong as the public coverage. Perhaps makes sense.
+
+And how about poverty level
+
+```{r}
+cor(cancer_data$pctDeathRate, cancer_data$povertyPercent)
+```
+Not as correlated...what does this mean? That deathrates are not dependent so much on poverty?
