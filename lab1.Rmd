@@ -54,6 +54,10 @@ Thomas/Nikita - am using this section to add any problems with the dataset. We h
 
 a) How do we determine whether the deaths were caused because the cancer was undiagnosed? Or whether it was diagnosed and not cured because it was incurable? Or whether it was diagnosed and not cured because the patient couldn't afford it? Since everything is averaged out per county, there is no way of knowing. Perhaps in my mind, the biggest issue with this dataset is that it provides the summary data per geography, rather than the individual patient data itself. What we need is per patient data, not the summary data...perhaps we need to bring this up as the major problem. Thoughts?
 
+Birthrate ~ births*1000 / est population
+
+Deathrate (due to cancer) ~ deaths*100 000 / est population
+
 b) PctPrivateCoverage and PctPublicCoverage don't add up to 100%. So some people are covered both with private and public coverage or some don't have coverage at all. The numbers range from 65 to 131 when you add them up. 
 ```{r}
 head(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage, 25)
