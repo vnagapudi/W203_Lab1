@@ -1,5 +1,5 @@
 ---
-title: "w203_lab1_Cancer_EDA"
+title: "Lab 1 - EDA for Cancer Dataset"
 author: "Nikita Nadkarni, Thomas Drage, Venkatesh Nagapudi"
 date: "September 14, 2018"
 output: pdf_document
@@ -9,13 +9,9 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-W203 Statistics for Data Science
-========================================================
-Lab 1 Cancer EDA
-========================================================
+W203 Statistics for Data Science, Fall 2018.
 
-
-##1.  Introduction (Just to kick things off)
+##1.  Introduction
 This is an exploratory data analysis to examine the relationship between patient death rates caused by cancer versus various factors including the type of patient coverage, patient income levels and so on.
 The data analysis includes the following sections:
 1. Preliminary Dataset analysis
@@ -35,7 +31,7 @@ library(car)
 cancer_data = read.csv("cancer.csv")
 ```
 
-## List of variables in cancer data
+### List of variables in cancer data
 
 
 ```{r}
@@ -47,6 +43,75 @@ Important indepdent variables include poverty levels of the county ("povertyPerc
 ```{r}
 str(cancer_data)
 ```
+
+
+
+
+
+##2. Univariate Analysis of Key Variables
+
+Thomas/Nikita - am using this section to add any problems with the dataset. We have to figure out a coherent way to structure this analysis and I am fine with any way you suggest.
+
+a) How do we determine whether the deaths were caused because the cancer was undiagnosed? Or whether it was diagnosed and not cured because it was incurable? Or whether it was diagnosed and not cured because the patient couldn't afford it? Since everything is averaged out per county, there is no way of knowing. Perhaps in my mind, the biggest issue with this dataset is that it provides the summary data per geography, rather than the individual patient data itself. What we need is per patient data, not the summary data...perhaps we need to bring this up as the major problem. Thoughts?
+
+b) PctPrivateCoverage and PctPublicCoverage don't add up to 100%. So some people are covered both with private and public coverage or some don't have coverage at all. The numbers range from 65 to 131 when you add them up. 
+```{r}
+head(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage, 25)
+min(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
+max(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
+```
+
+c) The same problem exists with the race related information. It doesn't add up to 100%. 
+
+```{r}
+head(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace, 25)
+min(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
+max(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
+```
+
+
+
+##3. Analysis of Key Relationships
+
+
+d) deathRate doesn't take into account the population of the county. Perhaps this is a huge problem. Maybe the data is not so bad if you find the actual % of population that died because of cancer and correlate it against other variables? A lot of the data so far that I gathered might be wrong if the main variable is not meaningful. Thoughts?
+
+```{r}
+#added new column into cancer_data
+cancer_data$pctDeathRate = cancer_data$deathRate/cancer_data$popEst2015
+```
+Also, how do we know that the deathRate data is for 2015?
+
+Let's see how pctDeathRate vs PcctPrivateCoverage looks now
+```{r}
+plot (~ jitter(cancer_data$PctPrivateCoverage,2) + jitter(cancer_data$pctDeathRate,2), type = "h")
+```
+How about the correlation between the two variables?
+```{r}
+cor(cancer_data$pctDeathRate, cancer_data$PctPrivateCoverage)
+```
+This shows very little correlation. (Nikita/Thomas - thoughts??)
+How about the correlation between pctDeathRates and PublicCoverage?
+```{r}
+cor(cancer_data$pctDeathRate, cancer_data$PctPublicCoverage)
+```
+This seems somewhat intuitive. Perhaps with public coverage, treatment is bad.
+
+How about median income?
+
+```{r}
+cor(cancer_data$pctDeathRate, cancer_data$medIncome)
+```
+A negative correlation that is as strong as the public coverage. Perhaps makes sense.
+
+And how about poverty level
+
+```{r}
+cor(cancer_data$pctDeathRate, cancer_data$povertyPercent)
+```
+Not as correlated...what does this mean? That deathrates are not dependent so much on poverty?
+
+
 How is death_rate correlated to the important variables? This ScatterPlotMatrix might throw some light
 ```{r}
 scatterplotMatrix(~ deathRate + povertyPercent + medIncome + PctPrivateCoverage + PctPublicCoverage, data = cancer_data)
@@ -87,59 +152,6 @@ cor(cancer_data$deathRate, NumPeopleWithPublicCoverage)
 ```
 
 
-##2.  Problems with the Dataset
-Thomas/Nikita - am using this section to add any problems with the dataset. We have to figure out a coherent way to structure this analysis and I am fine with any way you suggest.
+##4. Analysis of Secondary Effects
 
-a) How do we determine whether the deaths were caused because the cancer was undiagnosed? Or whether it was diagnosed and not cured because it was incurable? Or whether it was diagnosed and not cured because the patient couldn't afford it? Since everything is averaged out per county, there is no way of knowing. Perhaps in my mind, the biggest issue with this dataset is that it provides the summary data per geography, rather than the individual patient data itself. What we need is per patient data, not the summary data...perhaps we need to bring this up as the major problem. Thoughts?
-
-b) PctPrivateCoverage and PctPublicCoverage don't add up to 100%. So some people are covered both with private and public coverage or some don't have coverage at all. The numbers range from 65 to 131 when you add them up. 
-```{r}
-head(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage, 25)
-min(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
-max(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
-```
-
-c) The same problem exists with the race related information. It doesn't add up to 100%. 
-
-```{r}
-head(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace, 25)
-min(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
-max(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
-```
-
-d) deathRate doesn't take into account the population of the county. Perhaps this is a huge problem. Maybe the data is not so bad if you find the actual % of population that died because of cancer and correlate it against other variables? A lot of the data so far that I gathered might be wrong if the main variable is not meaningful. Thoughts?
-
-```{r}
-#added new column into cancer_data
-cancer_data$pctDeathRate = cancer_data$deathRate/cancer_data$popEst2015
-```
-Also, how do we know that the deathRate data is for 2015?
-
-Let's see how pctDeathRate vs PcctPrivateCoverage looks now
-```{r}
-plot (~ jitter(cancer_data$PctPrivateCoverage,2) + jitter(cancer_data$pctDeathRate,2), type = "h")
-```
-How about the correlation between the two variables?
-```{r}
-cor(cancer_data$pctDeathRate, cancer_data$PctPrivateCoverage)
-```
-This shows very little correlation. (Nikita/Thomas - thoughts??)
-How about the correlation between pctDeathRates and PublicCoverage?
-```{r}
-cor(cancer_data$pctDeathRate, cancer_data$PctPublicCoverage)
-```
-This seems somewhat intuitive. Perhaps with public coverage, treatment is bad.
-
-How about median income?
-
-```{r}
-cor(cancer_data$pctDeathRate, cancer_data$medIncome)
-```
-A negative correlation that is as strong as the public coverage. Perhaps makes sense.
-
-And how about poverty level
-
-```{r}
-cor(cancer_data$pctDeathRate, cancer_data$povertyPercent)
-```
-Not as correlated...what does this mean? That deathrates are not dependent so much on poverty?
+##5. Conclusion
