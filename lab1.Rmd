@@ -42,7 +42,7 @@ cancer_data = read.csv("cancer.csv")
 (list_of_varibles = objects(cancer_data))
 ```
 A high level summary of cancer_data shows 3047 observations of 30 variables. The important dependent variable is the deathRate. A close second is the incidence rate of cancer, which is the "avgAnnCount". 
-Important indepdent variables include how poor a patient is ("povertyPercent"), whether he/she has Private or Public coverage ("PctPrivateCoverage", "PctPublicCoverage"), his/her race and so on. (need to add more)
+Important indepdent variables include poverty levels of the county ("povertyPercent"), how many of them have Private or Public coverage ("PctPrivateCoverage", "PctPublicCoverage"), what is the predominant race and so on. (need to add more)
 
 ```{r}
 str(cancer_data)
@@ -65,6 +65,26 @@ There seems to be a high degree of correlation between income and deathRate. Is 
 plot (~ cancer_data$medIncome + cancer_data$deathRate, type = "h")
 ```
 There seems to be a gradual drop in death rates for people with higher median incomes. However, there are definitely some outliers as we see a lot of spikes in the death rates in some cases. Are these related to incurable cancers? Are these related to the geography in some ways? How do we figure out?
+
+Redoing some analysis here (Venky: Sep 15, 8:15pm PST) using actual numbers instead of percentages since deathRate is really not a %.
+
+What is the correlation between deathRate and number of people with private coverage?
+```{r}
+NumPeopleWithPrivCoverage = cancer_data$PctPrivateCoverage * cancer_data$popEst2015
+cor(cancer_data$deathRate, NumPeopleWithPrivCoverage)
+```
+Here is a plot 
+```{r}
+plot(~ jitter(log(NumPeopleWithPrivCoverage),2) + jitter(cancer_data$deathRate,2), type = "h")
+```
+
+
+
+What is the correlation between deathRate and number of people with public coverage?
+```{r}
+NumPeopleWithPublicCoverage = cancer_data$PctPublicCoverage * cancer_data$popEst2015
+cor(cancer_data$deathRate, NumPeopleWithPublicCoverage)
+```
 
 
 ##2.  Problems with the Dataset
