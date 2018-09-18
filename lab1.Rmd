@@ -92,8 +92,8 @@ If we look at the above summary, for the first row, BirthRate is 6.12, while dea
 
 In order to get the definition of each of these variables, since there is not enough data in the spreadsheet, we used the defintions offered on the internet.
 
-BirthRate is the number of births per 1000 people^^1
-DeathRate is the number of deaths per 100,000 people^^2
+BirthRate is the number of births per 1000 people (1)
+DeathRate is the number of deaths per 100,000 people (2)
 avgAnnCount is just the number of cancer incidents in the county.
 
 To prepare avgAnnCount, we decided to use the same definition as deathRate and come up with a variable "incidenceRate"
@@ -156,7 +156,19 @@ boxplot(deathRate ~ medIncome_bin, data = cancer_data_fixed,
         xlab = "Median Income bins",
         ylab = "Death Rate")
 ```
-As can be clearly seen, the higher the income, the lower is the death rate.
+As can be clearly seen, the higher the income, the lower is the death rate. This indicates that if the county is very poor on an average, then it is likely to have a higher death rate. We test this hypothesis by comparing deathRate against povertyPercent. 
+
+```{r}
+cor(cancer_data_fixed$povertyPercent, cancer_data_fixed$deathRate)
+```
+We notice that the correlation to povertyPercent is almost identical in absolute value to the median income (medIncome). 
+Let's examine the correlation between medIncome and povertyPercent now:
+```{r}
+cor(cancer_data_fixed$medIncome, cancer_data_fixed$povertyPercent)
+```
+There is a very strong negative correlation nearly close to -1.0 as expected between medIncome and povertyPercent.
+
+Now let's examine the coverage options that the people in the county are able to choose from.
 
 Clearly the affordability of healthcare is a major consideration is the battle against cancer. It is likely that if a person has a higher salary, he will choose to go with Private Health care which is intuitively better than Public Health care. Let's look at the correlation between these two variables.
 
