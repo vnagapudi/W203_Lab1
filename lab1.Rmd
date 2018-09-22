@@ -51,20 +51,6 @@ Birthrate ~ births*1000 / est population
 
 Deathrate (due to cancer) ~ deaths*100 000 / est population
 
-b) PctPrivateCoverage and PctPublicCoverage don't add up to 100%. So some people are covered both with private and public coverage or some don't have coverage at all. The numbers range from 65 to 131 when you add them up. 
-```{r}
-head(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage, 25)
-min(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
-max(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
-```
-
-c) The same problem exists with the race related information. It doesn't add up to 100%. 
-
-```{r}
-head(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace, 25)
-min(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
-max(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
-```
 
 ##2. Univariate Analysis of Key Variables
 
@@ -129,6 +115,35 @@ hist(cancer_data_fixed$BirthRate, main = "Birth Rate Distribution", breaks = 0:2
 Birth rates over 12 seem to be very low in terms of frequency. 
 
 The average birth rate being around 5.0 is a bit suspicious. The average birth rate in the USA is around 12.2 per 1,000 people. It is unclear why these counties have a low birth rate that is more than 60% lower than national average. Perhaps there is a certain type of cancer that causes lower birth rates? Perhaps this needs a bit more investigation.
+
+
+b) PctPrivateCoverage and PctPublicCoverage don't add up to 100%. So some people are covered both with private and public coverage or some don't have coverage at all. The numbers range from 65 to 131 when you add them up. 
+```{r}
+min(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
+max(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
+hist(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
+```
+
+Most private coverage is employee provided.
+
+```{r}
+hist(cancer_data$PctEmpPrivCoverage / cancer_data$PctPrivateCoverage)
+```
+
+
+c) The same problem exists with the race related information. It doesn't add up to 100%, however it is always less than 100, so it appears some people elected not to state their race. It appears Alaskan counties form the outliers - the predominant race must not be captured by this survey.
+
+```{r}
+head(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace, 25)
+min(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
+max(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
+```
+
+```{r}
+boxplot(cancer_data$PctWhite, cancer_data$PctBlack, cancer_data$PctAsian, cancer_data$PctOtherRace)
+
+hist(cancer_data$PctWhite + cancer_data$PctBlack + cancer_data$PctAsian + cancer_data$PctOtherRace)
+```
 
 ##3. Analysis of Key Relationships
 
