@@ -1,7 +1,7 @@
 ---
 title: "Lab 1 - EDA for Cancer Dataset"
-author: "Nikita Nadkarni, Thomas Drage, Venkatesh Nagapudi"
-date: "September 14, 2018"
+author: "Thomas Drage, Venkatesh Nagapudi"
+date: "September 22, 2018"
 output: pdf_document
 ---
 
@@ -13,12 +13,19 @@ W203 Statistics for Data Science, Fall 2018.
 
 ##1.  Introduction
 This is an exploratory data analysis to examine the relationship between patient death rates caused by cancer versus various factors including the type of patient coverage, patient income levels and so on.
+
 The data analysis includes the following sections:
-1. Preliminary Dataset analysis
-2. Problems with the Dataset
-3. Conclusions that can be reasonably achieved
-4. Recommendations 
-5. Improvements to the Dataset
+
+1.Data cleansing and preparation
+
+2.Univariate analysis of critical variables
+
+3.Multivariate analysis of critical relationships
+
+4.Secondary relationships 
+
+5.Conclusions
+
 
 
 First include library for scatterplots
@@ -77,12 +84,20 @@ sum(cancer_data_filter1$MedianAgeMale > 110)
 
 Clearly some of these rows could be invalid for MedianAge > 110, and it  might be best to filter them out.
 
+####c) Some issues related to average household size
+We found that there are a few more invalid data items related to average household size. Clearly this has to be at least equal to or greater than 1. But we found 57 of the rows had an average household size < 0.1. We decided that these rows were untrustworthy and we filtered them out.
+
 ```{r}
-cancer_data_fixed = cancer_data_filter1[cancer_data_filter1$MedianAge < 110, ]
+sum(cancer_data_filter1$AvgHouseholdSize < 0.1)
+```
+
+
+```{r}
+cancer_data_fixed = cancer_data_filter1[cancer_data_filter1$MedianAge < 110 & cancer_data_filter1$AvgHouseholdSize >=1, ]
 str(cancer_data_fixed)
 ```
 
-Now we are down to 2812 observerations.
+Now we are down to 2755 observerations.
 
 ####c) Potential problems with Private and Public Coverage not adding up to 100%
 PctPrivateCoverage and PctPublicCoverage don't add up to 100%. So some people are covered both with private and public coverage or some don't have coverage at all. The numbers range from 65 to 131 when you add them up. 
@@ -385,7 +400,9 @@ summary(cancer_data_fixed$AvgHouseholdSize)
 ```
 
 
-It looks like there are anywhere from 0 through 4 people per household. Let's plot deathRate against the number of people in a boxplot to see the correlation.
+It looks like there are anywhere from 1.86 through 4 people per household. This is now correct after we discarded a number of very low values which did not make sense.
+
+Let's plot deathRate against the number of people in a boxplot to see the correlation.
 
 ```{r}
 HouseholdSize_bin = cut(cancer_data_fixed$AvgHouseholdSize, breaks = c(1, 2, 3, 4, Inf))
@@ -404,7 +421,7 @@ boxplot(AvgHouseholdSize ~ binnedInc, data = cancer_data_fixed,
         ylab = "Average household size")
 ```
 
-As expected there is an increase in median income as the average household size increases.
+There is an increase in median income as the average household size increases, but only slightly so.
 
 
 ##5. Conclusion
