@@ -2,59 +2,67 @@
 title: "Lab 1 - EDA for Cancer Dataset"
 author: "Thomas Drage, Venkatesh Nagapudi"
 date: "September 22, 2018"
-output: pdf_document
+output: 
+  pdf_document: 
+    fig_height: 4
+    fig_width: 5.5
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(tidy=TRUE)
 ```
 
 W203 Statistics for Data Science, Fall 2018.
 
 ##1.  Introduction
-This is an exploratory data analysis to examine the relationship between patient death rates caused by cancer versus various factors including the type of patient coverage, patient income levels and so on.
+This is an exploratory data analysis to examine the relationship between patient death rates due to by cancer and various demographic factors including the type of insurance coverage, income level, race etc. 
 
-The data analysis includes the following sections:
+These relationships will be addressed using a dataset provided by the Government Health Agency and consists of survey data taken at county level for selected areas in the United States utilising 2015 as the current population and cancer mortality data averaged across the years 2009-2013. The basis for the selection of these areas is unknown. The intent of this analysis is to assist the Government Health Agency in identifying communities which could benefit from social intervention to reduce cancer mortality rates and to identify which particular areas of intervention would be of most benefit. Note that this report does not seek to create a statistical model for the data provided but to provide insight into the key features and relationships associated with this problem.
 
-1.Data cleansing and preparation
+This analysis is structured as follows:
 
-2.Univariate analysis of critical variables
+1. Introduction
 
-3.Multivariate analysis of critical relationships
+2. Univariate Analysis of Key Variables
 
-4.Secondary relationships 
+3. Analysis of Key Relationships
 
-5.Conclusions
+4. Analysis of Secondary Effects
 
+5. Conclusion
 
+###Setup
 
-First include library for scatterplots
+This analysis is presented using the R language, utilising the following packages:
 ```{r}
 library(car)
 ```
 
-
+The dataset was provided in CSV format and imported for this analysis:
 ```{r load}
 cancer_data = read.csv("cancer.csv")
 ```
 
-### List of variables in cancer data
+### Data Selection
 
+A high level summary of cancer_data shows 3047 observations of 30 variables. The important dependent variable is the deathRate. A close second is the incidence rate of cancer, which is the "avgAnnCount". 
+Important indepdent variables include poverty levels of the county ("povertyPercent"), how many of them have Private or Public coverage ("PctPrivateCoverage", "PctPublicCoverage"), what is the predominant race and so on. (need to add more)
 ```{r}
 (list_of_varibles = objects(cancer_data))
 ```
-A high level summary of cancer_data shows 3047 observations of 30 variables. The important dependent variable is the deathRate. A close second is the incidence rate of cancer, which is the "avgAnnCount". 
-Important indepdent variables include poverty levels of the county ("povertyPercent"), how many of them have Private or Public coverage ("PctPrivateCoverage", "PctPublicCoverage"), what is the predominant race and so on. (need to add more)
+
+The datatypes can be examined and it can be noted that some level of inference is required with respect to units of measure. The data is largely numeric, with the exception of two Factor types, binnedInc which appears to be an income range for the county and Geography which is simple the state and county name.
 
 ```{r}
 str(cancer_data)
 ```
 
-### Cleaning up invalid data
+### Data Cleansing
 
-####a) AvgAnnCount
+####a) avgAnnCount
 
-The first variable in the spreadsheet "cancer.csv" is the incidence rate of cancer "avgAnnCount". The outcome variable, deathRate is intuitively dependent on the incidence rate of cancer. Summarzing this variable:
+The first variable in the dataset is the incidence rate of cancer "avgAnnCount". The outcome variable, deathRate is intuitively dependent on the incidence rate of cancer. Summarizing this variable:
 ```{r}
 summary(cancer_data$avgAnnCount)
 ```
@@ -62,9 +70,10 @@ If we examine the Median and Mean, the Mean is nearly 3.5 times the median. This
 ```{r}
 plot(cancer_data$avgAnnCount)
 ```
-There is at least one major outlier around the index "1000" and a couple of more at 2400 and 2800. It makes sense to examine what is going on with the avgAnnCount to see if there are any discrepancies that might be causing these outliers.
 
-Examining "cancer.csv", it clear that the avgAnnCount has some invalid data. It appears that the value "1962.667684" is repeated in several rows. We will need to discard these rows since it is unclear if the rest of the columns contain valid data. So we filter these rows out below
+There is at least one major outlier around the index "1000" and several more at 2400 and 2800. It makes sense to examine avgAnnCount in more detail to see if there are any discrepancies that might be causing these outliers.
+
+From inspection of the dataset, it is clear that the avgAnnCount has some invalid data. It appears that the value "1962.667684" is repeated in several rows. We will need to discard these rows since it is unclear if the rest of the columns contain valid data. So we filter these rows out below
 
 ```{r}
 cancer_data_filter1 = cancer_data[cancer_data$avgAnnCount != 1962.667684, ]
@@ -82,7 +91,7 @@ sum(cancer_data_filter1$MedianAgeFemale > 110)
 sum(cancer_data_filter1$MedianAgeMale > 110)
 ```
 
-Clearly some of these rows could be invalid for MedianAge > 110, and it  might be best to filter them out.
+Clearly some of these rows could be invalid for MedianAge > 110, and it might be best to filter them out.
 
 ####c) Some issues related to average household size
 We found that there are a few more invalid data items related to average household size. Clearly this has to be at least equal to or greater than 1. But we found 57 of the rows had an average household size < 0.1. We decided that these rows were untrustworthy and we filtered them out.
@@ -100,9 +109,9 @@ str(cancer_data_fixed)
 Now we are down to 2755 observerations.
 
 ####c) Potential problems with Private and Public Coverage not adding up to 100%
-PctPrivateCoverage and PctPublicCoverage don't add up to 100%. So some people are covered both with private and public coverage or some don't have coverage at all. The numbers range from 65 to 131 when you add them up. 
+PctPrivateCoverage and PctPublicCoverage don't sum to 100% in the majority of cases. This implies that people are covered both with private and public coverage or some don't have coverage at all. 
 
-While this is likely not a problem, we do want to point out this that there could be a possible discrepancy here.
+The sum of both groups ranges from 65 to 131 which is not unreasonable and while this is likely not a problem, we do want to point out this that there could be a possible discrepancy, especially if the incidence of having both forms of coverage was expected to be low.
 
 ```{r}
 min(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
@@ -110,7 +119,7 @@ max(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
 ```
 
 ####d) Problem with incomplete race related information
-The same problem exists with the race related information. It doesn't add up to 100%, however it is always less than 100, so it appears some people elected not to state their race. It appears Alaskan counties form the outliers - the predominant race must not be captured by this survey.
+The same problem exists with the race related information. It doesn't sum to 100% for many counties, however it is always less than 100, and so it appears some people elected not to state their race. Mostly Alaskan counties form the outliers - the predominant race is likely not captured by this survey.
 
 ```{r}
 head(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace, 25)
@@ -118,19 +127,67 @@ min(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_
 max(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
 ```
 
+####e) Source of marriage data not clear
+
+The dataset gives family information in two formats, PercentMarried and PctMarriedHouseholds. Whilst the exact definitions are not available, we can assume that the the former refers to invididuals and the latter counted if a married couple exists withint he household. Notwithstanding factors such as multiple occupancy and separations we would expect these to be highly correlated. The summaries below support a reasonable range and distribution for this data as-is.
+
+```{r}
+summary(cancer_data$PercentMarried)
+summary(cancer_data$PctMarriedHouseholds)
+```
+
+####f) Education data non-hierarchical and categorisation mixed
+
+Education demographic data is given in a series of columns, categorised by education level and age of respondant. This appears to be raw (but aggregated) survey data. The available columns are:
+
+* PctNoHS18_24: High school not completed, ages 18-24.
+* PctHS18_24: High school completed, ages 18-24.
+* PctHS25_Over: High school completed, over 25.
+* PctSomeCol18_24: Some college completed, ages 18-24.
+* PctBachDeg18_24: Bachelor's degree obtained, ages 18-24.
+* PctBachDeg25_Over: Bachelor's degree obtained, over 25.
+
+* PctEmployed16_Over: Employment rate, over 16.
+* PctUnemployed16_Over: Unemployment rate, over 16.
+
+Note that due to these definitions it is difficult to verify completeness as there are groups we have no information for, e.g. high school not completed for over 25s or those with some college over 25. It should be noted that the strict definitions do not represent vocational education or higher degrees either. We can verify the distribution is reasonable however;
+
+```{r}
+summary(cancer_data$PctNoHS18_24)
+summary(cancer_data$PctHS18_24)
+summary(cancer_data$PctHS25_Over)
+summary(cancer_data$PctSomeCol18_24)
+summary(cancer_data$PctBachDeg18_24)
+summary(cancer_data$PctBachDeg25_Over)
+```
+
+The significant number of NA records for PctSomeCol18_24 renders this field unusable for analysis. The zero minimums for PctHS18_24 and PctBackDeg18_24 are also questionable, the single record showing no high school graduates should be excluded from individual analysis however the 118 counties with no respondants without a degree are problematic and will need to be considered when drawing conclusions from this type of data.
+
+```{r}
+sum(cancer_data$PctHS18_24 < 0.01)
+sum(cancer_data$PctBachDeg18_24 < 0.01)
+```
+
+The categorisation of unemployment data also leaves something to be desired as the rest of the population either unable to work or retired is not represented, however on a basic level the data seems reasonable.
+
+```{r}
+summary(cancer_data$PctEmployed16_Over)
+summary(cancer_data$PctUnemployed16_Over)
+```
+
 ##2. Univariate Analysis of Key Variables
 
-###a) Getting to incidence rate using avgAnnCount
+###a) Establishing an incidence rate using avgAnnCount
 
-The "avgAnnCount" variable is not very useful since it needs to be averaged over the population of the county. To be useful, it needs to have the same defintion of the key outcome variable, deathRate. 
+The "avgAnnCount" variable is not insightful as given, as it needs to be averaged over the population of the county. For comparison purposes, it needs to have the same defintion of the key outcome variable, deathRate. 
 
 If we look at the above summary, for the first row, BirthRate is 6.12, while deathRate is 165. The avgAnnCount is 1397. 
 
-In order to get the definition of each of these variables, since there is not enough data in the spreadsheet, we used the defintions offered on the internet.
+In order to get the definition of the units of measure for each of these variables, as they were not provided in the dataset we have utilised and verified against the typical ways of representing these measures:
 
-BirthRate is the number of births per 1000 people (1)
-DeathRate is the number of deaths per 100,000 people (2)
-avgAnnCount is just the number of cancer incidents in the county.
+BirthRate is the number of births per 1000 people (1),
+DeathRate is the number of deaths per 100,000 people (2),
+avgAnnCount is the raw number of cancer incidents in the county.
 
 To prepare avgAnnCount, we decided to use the same definition as deathRate and come up with a variable "incidenceRate"
 ```{r}
@@ -138,8 +195,7 @@ incidenceRate = 100000*cancer_data_fixed$avgAnnCount/cancer_data_fixed$popEst201
 summary(incidenceRate)
 ```
 
-
-The mean and median values are very close indicating a normal distribution. Plotting the histogram now:
+The mean and median values are very close indicating a normal distribution, which can be verified in a histogram:
 
 ```{r}
 hist(incidenceRate, main = "Incidence Rate of Cancer", xlab = "Incidence Rate per 100,000 people")
@@ -156,8 +212,9 @@ The Median and Mean are very close indicating Normal distribution. Plotting this
 hist(cancer_data_fixed$deathRate, main = "Death Rate due to cancer", xlab = "Death rate per 100,000 people")
 ```
 
-This shows that on an average 180 people die of cancer while 550 people are diagnosed with cancer for every 100,000 people. This  means that nearly 1/3rd of all people who are diagnosed with cancer die within six years of diagnosis. (The study indicates that the deathRates are from 2015 while the incidence rates are between 2009 and 2013) 
+This shows that on an average 180 people die of cancer while 550 people are diagnosed with cancer for every 100,000 people. This  means that nearly 1/3rd of all people who are diagnosed with cancer die within six years of diagnosis 
 
+(Note: the study indicates that the deathRates are from 2015 while the incidence rates are between 2009 and 2013). 
 
 ###c) Analyzing birthRate for completeness
 
@@ -165,13 +222,13 @@ Let's now look at the birthRate for completeness though it seems very unlikely t
 ```{r}
 summary(cancer_data_fixed$BirthRate)
 ```
-The Mean and Median are pretty close, though the Max seems to be very high. Plotting the data with a histogram:
+The Mean and Median are similar, though the Max seems to be very high. Plotting the data with a histogram:
 ```{r}
 hist(cancer_data_fixed$BirthRate, main = "Birth Rate Distribution", breaks = 0:22 - 0.5, xlab = "Birth Rate in for 1000 people")
 ```
 Birth rates over 12 seem to be very low in terms of frequency. 
 
-The average birth rate being around 5.0 is a bit suspicious. The average birth rate in the USA is around 12.2 per 1,000 people. It is unclear why these counties have a low birth rate that is more than 60% lower than national average. Perhaps there is a certain type of cancer that causes lower birth rates? Perhaps this needs a bit more investigation.
+The average birth rate of approximately 5.0 is is questionable since the average birth rate in the USA is around 12.2 per 1,000 people. It is unclear why these counties have a low birth rate that is more than 60% lower than national average. Perhaps there is a certain type of cancer that causes lower birth rates? This anomoly would benefit from further investigation.
 
 ###d) Analyzing how patients are covered by Private and Public Coverage
 
@@ -182,19 +239,20 @@ hist(cancer_data_fixed$PctEmpPrivCoverage / cancer_data_fixed$PctPrivateCoverage
      main = "Percentage of Employer Provided Private Coverage", 
      xlab = "Percentage Employer provided Private coverage")
 ```
-Clearly, most of the time, private coverage is coming from the employer
 
-###d) Analyzing Race related information
+###e) Analyzing Race related information
 
-Let's take a look at the race related information that is available. While this information is definitely incomplete, let's take a look at the ratio of Whites vs Blacks vs Asian vs OtherRace
+Further analysis of the race-related information shows that it is definitely incomplete, for example, we can examine the distribution of races and the distribution of the sum of the given categories;
 
 ```{r}
 boxplot(cancer_data$PctWhite, cancer_data$PctBlack, cancer_data$PctAsian, cancer_data$PctOtherRace, names = c("White", "Black", "Asian", "Other"))
+
+hist(cancer_data$PctWhite + cancer_data$PctBlack + cancer_data$PctAsian + cancer_data$PctOtherRace)
 ```
 
-There is definitely a predominance of Whites in the population as expected. But this also points to a potential data collection problem related to people not mentioning their race.
+There is definitely a predominance of Whites in the population as expected, but the inconsistency points to a preference not to specify race in the survey.
 
-###d) Analyzing and preparing Income related variables
+###f) Analyzing and preparing Income related variables
 
 Let's analyze medIncome and binnedInc. medIncome is the median income of the county is a good indicator on the poverty percent. Binned Income is the income separated out into 10 bins. 
 
