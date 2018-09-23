@@ -1,3 +1,4 @@
 ignore_me.txt
 *.pdf
 .Rhistory
+*.bak
