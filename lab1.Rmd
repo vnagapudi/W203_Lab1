@@ -4,8 +4,8 @@ author: "Thomas Drage, Venkatesh Nagapudi"
 date: "September 22, 2018"
 output: 
   pdf_document: 
-    fig_height: 4
-    fig_width: 5.5
+    fig_height: 3.5
+    fig_width: 5
 ---
 
 ```{r setup, include=FALSE}
@@ -342,17 +342,15 @@ There is a very strong negative correlation nearly close to -1.0 as expected bet
 
 ###d) Relationship between death rate and private & public coverage
 
-Now let's examine the coverage options that the people in the county are able to choose from.
-
-Clearly the affordability of healthcare is a major consideration is the battle against cancer. It is likely that if a person has a higher salary, he will choose to go with Private Health care which is intuitively better than Public Health care. Let's look at the correlation between these two variables.
+Clearly the affordability of healthcare is a major consideration is the battle against cancer. It is likely that if a person has a higher salary, he will choose to go with Private Health care which is generally regarded to provide better services than Public Health care. we can examine the correlation between these two variables.
 
 ```{r}
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctPrivateCoverage)
 ```
-This does show the strong negative correlation confirming that deathRates are inversely related to Private Coverage. Let's plot this out and make sure.
+This does show the negative correlation confirming that deathRates are inversely related to Private Coverage. This can be verified in a plot:
 
 ```{r}
-plot (~ jitter(PctPrivateCoverage,2) + jitter(deathRate,2), data = cancer_data_fixed)
+plot (~ PctPrivateCoverage + deathRate, data = cancer_data_fixed)
 abline(lm(cancer_data_fixed$deathRate ~ cancer_data_fixed$PctPrivateCoverage))
 ```
 
@@ -361,12 +359,19 @@ We now examine the relationship between deathRate and Public coverage.
 ```{r}
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctPublicCoverage)
 ```
-There is a very strong positive correlation indicating that death rates in counties that have higher Public Coverage are much higher. There is a problem if the county relies on public health coverage. 
+There is a very strong positive correlation indicating that death rates in counties that have higher Public Coverage are greater. This is possibly due to incidence of public health coverage indicating lower subscription to private health insurance, but it would be expected to be tempered by those who have no insurance. It appears in any case that it is a problem if the county relies on public health coverage.
+
+To quantify this we can examine the gain associated with private health insurance uptake:
+
+```{r}
+lm(100*cancer_data_fixed$deathRate/mean(cancer_data_fixed$deathRate) ~ cancer_data_fixed$PctPrivateCoverage)
+```
+This indicates that, for example, a 10% greater uptake in private health insurance is associated with a 5.5% reduction in the county's death rate due to cancer.
 
 We could plot this out similar to the one for Private coverage.
 
 ```{r}
-plot (~ jitter(PctPublicCoverage,2) + jitter(deathRate,2), data = cancer_data_fixed)
+plot (~ PctPublicCoverage + deathRate, data = cancer_data_fixed)
 abline(lm(cancer_data_fixed$deathRate ~ cancer_data_fixed$PctPublicCoverage))
 ```
 
