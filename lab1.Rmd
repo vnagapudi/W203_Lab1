@@ -189,17 +189,24 @@ BirthRate is the number of births per 1000 people (1),
 DeathRate is the number of deaths per 100,000 people (2),
 avgAnnCount is the raw number of cancer incidents in the county.
 
-To prepare avgAnnCount, we decided to use the same definition as deathRate and come up with a variable "incidenceRate"
+To prepare avgAnnCount, we have used the same definition as deathRate and come up with a variable "incidenceRate"
 ```{r}
 incidenceRate = 100000*cancer_data_fixed$avgAnnCount/cancer_data_fixed$popEst2015
 summary(incidenceRate)
 ```
 
-The mean and median values are very close indicating a normal distribution, which can be verified in a histogram:
+The mean and median values are very close indicating a symmetric distribution, which can be verified in a histogram:
 
 ```{r}
 hist(incidenceRate, main = "Incidence Rate of Cancer", xlab = "Incidence Rate per 100,000 people")
 ```
+
+The standard deviation of this quantity is: 
+
+```{r}
+sd(incidenceRate)
+```
+Which shows a significant variation in incidence on a geographical basis, foreshadowing some demographic dependence on cancer incidence in the US.
 
 ###b) Analyzing the key outcome variable: deathRate
 
@@ -207,33 +214,44 @@ Now looking at the key outcome variable deathRate and summarizing it:
 ```{r}
 summary(cancer_data_fixed$deathRate)
 ```
-The Median and Mean are very close indicating Normal distribution. Plotting this variable in a histogram:
+The Median and Mean are very close indicating a symmetric distribution. Plotting this variable in a histogram:
 ```{r}
 hist(cancer_data_fixed$deathRate, main = "Death Rate due to cancer", xlab = "Death rate per 100,000 people")
 ```
 
-This shows that on an average 180 people die of cancer while 550 people are diagnosed with cancer for every 100,000 people. This  means that nearly 1/3rd of all people who are diagnosed with cancer die within six years of diagnosis 
+This shows that on an average 180 people die of cancer while 550 people are diagnosed with cancer for every 100,000 people. This means that nearly 1/3rd of all people who are diagnosed with cancer die within six years of diagnosis. 
 
-(Note: the study indicates that the deathRates are from 2015 while the incidence rates are between 2009 and 2013). 
+The standard deviation is:
 
-###c) Analyzing birthRate for completeness
+```{r}
+sd(cancer_data_fixed$deathRate)
+```
+This is slightly narrower on a percentage basis (16% vs 22%) than the cancer incidence rate and the relationship between these two quantities is worthy of further analysis in Section 3. 
 
-Let's now look at the birthRate for completeness though it seems very unlikely that this will influence the deathRate due to cancer. Summarizing the birthRate
+(Note: The study indicates that the deathRates are from 2015 while the incidence rates are between 2009 and 2013.) 
+
+###c) Analyzing birthRate
+
+For completeness, the birthRate is analysed here, though it seems very unlikely that this will influence the deathRate due to cancer. Summarizing the birthRate:
 ```{r}
 summary(cancer_data_fixed$BirthRate)
 ```
-The Mean and Median are similar, though the Max seems to be very high. Plotting the data with a histogram:
+The mean and median are similar, though the maximum seems to be very high. Plotting the data with a histogram:
 ```{r}
 hist(cancer_data_fixed$BirthRate, main = "Birth Rate Distribution", breaks = 0:22 - 0.5, xlab = "Birth Rate in for 1000 people")
 ```
 Birth rates over 12 seem to be very low in terms of frequency. 
 
-The average birth rate of approximately 5.0 is is questionable since the average birth rate in the USA is around 12.2 per 1,000 people. It is unclear why these counties have a low birth rate that is more than 60% lower than national average. Perhaps there is a certain type of cancer that causes lower birth rates? This anomoly would benefit from further investigation.
+The average birth rate of approximately 5.0 is is questionable since the average birth rate in the USA is around 12.2 per 1,000 people. It is unclear why these counties have a low birth rate that is more than 60% lower than national average. Perhaps there is a certain type of cancer that causes lower birth rates? This anomaly would benefit from further investigation.
 
 ###d) Analyzing how patients are covered by Private and Public Coverage
 
-As mentioned earlier, it seems as if some patients have both Public and Private Coverage, or some have neither. But there is likely nothing wrong with this scenario.  Analyzing Private Coverage further, it is clear that most private coverage is employer provided.
+As mentioned earlier, it seems as if some patients have both Public and Private Coverage, or some have neither. On average however, slightly more than 60% of people have public insurance and slightly less than 40% have private insurance and the degree of variation between counties is not particularly large. Some counties have significant variation, potentially related to emplyoment or economic factors.
 
+```{r}
+boxplot(cancer_data_fixed$PctPublicCoverage, cancer_data_fixed$PctPrivateCoverage, main = "Public and Private Insurance Coverage Distribution", names = c("Private","Public"), ylab = "Percent")
+```
+Analyzing Private Coverage further, it is clear that most private coverage is employer provided.
 ```{r}
 hist(cancer_data_fixed$PctEmpPrivCoverage / cancer_data_fixed$PctPrivateCoverage,
      main = "Percentage of Employer Provided Private Coverage", 
@@ -250,7 +268,7 @@ boxplot(cancer_data$PctWhite, cancer_data$PctBlack, cancer_data$PctAsian, cancer
 hist(cancer_data$PctWhite + cancer_data$PctBlack + cancer_data$PctAsian + cancer_data$PctOtherRace)
 ```
 
-There is definitely a predominance of Whites in the population as expected, but the inconsistency points to a preference not to specify race in the survey.
+There is definitely a predominance of Whites in the population as expected, but the inconsistency points to a preference not to specify race in the survey. As it is well known that genetic predispositions to diseases linked to race exist this is problematic for our analysis as some minorities are certainly under-represented. 
 
 ###f) Analyzing and preparing Income related variables
 
@@ -267,25 +285,31 @@ The binned income has a problem as the last level is not ordered. We will need t
 cancer_data_fixed$binnedInc = factor(cancer_data_fixed$binnedInc, c("[22640, 34218.1]","(34218.1, 37413.8]","(37413.8, 40362.7]","(40362.7, 42724.4]","(42724.4, 45201]","(45201, 48021.6]","(48021.6, 51046.4]","(51046.4, 54545.6]","(54545.6, 61494.5]","(61494.5, 125635]"))
 ```
 
-This should take care of the order of the binned levels.
-
 
 ##3. Analysis of Key Relationships
 
 ###a) Relationship between incidence rate and death rate
-We now examine how the key outcome variable deathRate is related to other variables. First, let's see if there is a correlation between the incidence rate and death rates. Intuitively, it seems to make sense that the higher the incidence rate, the higher the death rate should be. 
+We now examine how the key outcome variable deathRate is related to other variables. First, let's see if there is a correlation between the incidence rate and death rates. Intuitively, it seems to make sense that the higher the incidence rate, the higher the death rate should be, however we noted a variation in the distributions previously.  
+
+```{r}
+plot(incidenceRate, cancer_data_fixed$deathRate)
+```
+
+There is a general trend that higher death rate due to cancer occurs where there is a higher incidence rate, but the significant variability observed indicates that there are other effects at play which are independent of the two events. For example, environmental or race-prevalance effects may influence cancer incidence but health insurance or poverty effects may have a greater role in death due to variability of treatment outcomes. We can quantify this with the correlation coefficient:
+
 ```{r}
 cor(incidenceRate, cancer_data_fixed$deathRate)
 ```
-The correlation of 0.31 is pretty strong as expected. 
+
+This indicates a positive correlation, however it is not particularly strong.
 
 ###b) Relationship between death rate and median income
 
-One of the key relationships we want to examine is whether a county with a lower income generally sees a higher deathRate since it is likely that battling cancer is an expensive proposition. Let's examine the correlation:
+One of the key relationships we want to examine is whether a county with a lower income generally sees a higher deathRate since it is likely that battling cancer is an expensive proposition. First we examine the correlation:
 ```{r}
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$medIncome)
 ```
-There is a very strong negative correlation confirming that the deathRate is indeed higher if the median income is lower. 
+There is a negative correlation confirming that the deathRate is indeed higher if the median income is lower. 
 
 Let's now figure the correlation between deathRate and median income bins using a boxplot.
 
@@ -297,6 +321,13 @@ boxplot(deathRate ~ binnedInc, data = cancer_data_fixed,
 ```
 As can be clearly seen, the higher the income, the lower is the death rate. This indicates that if the county is very poor on an average, then it is likely to have a higher death rate. We test this hypothesis by comparing deathRate against povertyPercent. 
 
+Revisting (a) above, we can note the correlation with incidenceRate:
+
+```{r}
+cor(incidenceRate, cancer_data_fixed$medIncome)
+```
+This is a lesser correlation and highlights that a larger variety of factors are at play in causing incidences of cancer than in treatment outcomes.
+
 ###c) Relationship between death rate and poverty percentage
 
 ```{r}
@@ -307,7 +338,7 @@ Let's examine the correlation between medIncome and povertyPercent now:
 ```{r}
 cor(cancer_data_fixed$medIncome, cancer_data_fixed$povertyPercent)
 ```
-There is a very strong negative correlation nearly close to -1.0 as expected between medIncome and povertyPercent.
+There is a very strong negative correlation nearly close to -1.0 as expected between medIncome and povertyPercent. This similarity suggests only that they both indicate economic influence on cancer death rate.
 
 ###d) Relationship between death rate and private & public coverage
 
