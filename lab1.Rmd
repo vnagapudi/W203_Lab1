@@ -4,8 +4,8 @@ author: "Thomas Drage, Venkatesh Nagapudi"
 date: "September 22, 2018"
 output: 
   pdf_document: 
-    fig_height: 3.5
-    fig_width: 5
+    fig_height: 4
+    fig_width: 5.5
 ---
 
 ```{r setup, include=FALSE}
@@ -68,16 +68,14 @@ summary(cancer_data$avgAnnCount)
 ```
 If we examine the Median and Mean, the Mean is nearly 3.5 times the median. This looks a little suspicious since we can generally expect the data distribution to be normal in nature. Here is a plot of the avgAnnCount
 ```{r}
-plot(cancer_data$avgAnnCount)
+plot(cancer_data$avgAnnCount, ylab="averageAnnCount")
 ```
 
-There is at least one major outlier around the index "1000" and several more at 2400 and 2800. It makes sense to examine avgAnnCount in more detail to see if there are any discrepancies that might be causing these outliers.
-
-From inspection of the dataset, it is clear that the avgAnnCount has some invalid data. It appears that the value "1962.667684" is repeated in several rows. We will need to discard these rows since it is unclear if the rest of the columns contain valid data. So we filter these rows out below
+There appear to be quite a few outliers present, some of which are very extreme, however, this data is not yet normalised for population. It is worthwhile to investigate the composition of this data further to see if there are any discrepancies that might be causing these outliers. From inspection of the dataset, it is clear that the avgAnnCount has some invalid data. It appears that the value "1962.667684" is repeated in several rows. We will need to discard these rows since it is unclear if the rest of the columns contain valid data. So we filter these rows out below:
 
 ```{r}
 cancer_data_filter1 = cancer_data[cancer_data$avgAnnCount != 1962.667684, ]
-str(cancer_data_filter1)
+nrow(cancer_data_filter1)
 ```
 Now we are down to 2841 observations. 
 
@@ -103,7 +101,7 @@ sum(cancer_data_filter1$AvgHouseholdSize < 0.1)
 
 ```{r}
 cancer_data_fixed = cancer_data_filter1[cancer_data_filter1$MedianAge < 110 & cancer_data_filter1$AvgHouseholdSize >=1, ]
-str(cancer_data_fixed)
+nrow(cancer_data_fixed)
 ```
 
 Now we are down to 2755 observerations.
@@ -185,11 +183,11 @@ If we look at the above summary, for the first row, BirthRate is 6.12, while dea
 
 In order to get the definition of the units of measure for each of these variables, as they were not provided in the dataset we have utilised and verified against the typical ways of representing these measures:
 
-BirthRate is the number of births per 1000 people (1),
-DeathRate is the number of deaths per 100,000 people (2),
+BirthRate is the number of births per 1000 people,
+DeathRate is the number of deaths per 100,000 people,
 avgAnnCount is the raw number of cancer incidents in the county.
 
-To prepare avgAnnCount, we have used the same definition as deathRate and come up with a variable "incidenceRate"
+To prepare avgAnnCount, we have used the same definition as deathRate and created a new variable, "incidenceRate":
 ```{r}
 incidenceRate = 100000*cancer_data_fixed$avgAnnCount/cancer_data_fixed$popEst2015
 summary(incidenceRate)
@@ -201,7 +199,7 @@ The mean and median values are very close indicating a symmetric distribution, w
 hist(incidenceRate, main = "Incidence Rate of Cancer", xlab = "Incidence Rate per 100,000 people")
 ```
 
-The standard deviation of this quantity is: 
+It is worth noting that in this format the significant outliers noted in averageAnnCount have been eliminated due to the population adjustment. The standard deviation of this quantity is: 
 
 ```{r}
 sd(incidenceRate)
@@ -230,7 +228,7 @@ This is slightly narrower on a percentage basis (16% vs 22%) than the cancer inc
 
 (Note: The study indicates that the deathRates are from 2015 while the incidence rates are between 2009 and 2013.) 
 
-###c) Analyzing birthRate
+###c) Distribution of birthRate and median age
 
 For completeness, the birthRate is analysed here, though it seems very unlikely that this will influence the deathRate due to cancer. Summarizing the birthRate:
 ```{r}
@@ -243,6 +241,12 @@ hist(cancer_data_fixed$BirthRate, main = "Birth Rate Distribution", breaks = 0:2
 Birth rates over 12 seem to be very low in terms of frequency. 
 
 The average birth rate of approximately 5.0 is is questionable since the average birth rate in the USA is around 12.2 per 1,000 people. It is unclear why these counties have a low birth rate that is more than 60% lower than national average. Perhaps there is a certain type of cancer that causes lower birth rates? This anomaly would benefit from further investigation.
+
+There is a reasonably useful age spread in the median age of counties, which will allow us to investigate effects of age on cancer incidence. The distribution peaks around middle age as expected and there are few communities with medians at the age-extremes.
+
+```{r}
+hist(cancer_data_fixed$MedianAge, main = "County Median Age Distribution", xlab = "Median Age")
+```
 
 ###d) Analyzing how patients are covered by Private and Public Coverage
 
@@ -263,12 +267,10 @@ hist(cancer_data_fixed$PctEmpPrivCoverage / cancer_data_fixed$PctPrivateCoverage
 Further analysis of the race-related information shows that it is definitely incomplete, for example, we can examine the distribution of races and the distribution of the sum of the given categories;
 
 ```{r}
-boxplot(cancer_data$PctWhite, cancer_data$PctBlack, cancer_data$PctAsian, cancer_data$PctOtherRace, names = c("White", "Black", "Asian", "Other"))
-
-hist(cancer_data$PctWhite + cancer_data$PctBlack + cancer_data$PctAsian + cancer_data$PctOtherRace)
+boxplot(cancer_data$PctWhite, cancer_data$PctBlack, cancer_data$PctAsian, cancer_data$PctOtherRace, cancer_data$PctWhite + cancer_data$PctBlack + cancer_data$PctAsian + cancer_data$PctOtherRace, names = c("White", "Black", "Asian", "Other", "Sum"))
 ```
 
-There is definitely a predominance of Whites in the population as expected, but the inconsistency points to a preference not to specify race in the survey. As it is well known that genetic predispositions to diseases linked to race exist this is problematic for our analysis as some minorities are certainly under-represented. 
+There is definitely a predominance of caucasians in the population as expected, but the inconsistency in the sum points to a preference not to specify race in the survey. As it is well known that genetic predispositions to diseases linked to race exist this is problematic for our analysis as some minorities are certainly under-represented. 
 
 ###f) Analyzing and preparing Income related variables
 
@@ -328,8 +330,6 @@ cor(incidenceRate, cancer_data_fixed$medIncome)
 ```
 This is a lesser correlation and highlights that a larger variety of factors are at play in causing incidences of cancer than in treatment outcomes.
 
-###c) Relationship between death rate and poverty percentage
-
 ```{r}
 cor(cancer_data_fixed$povertyPercent, cancer_data_fixed$deathRate)
 ```
@@ -338,9 +338,9 @@ Let's examine the correlation between medIncome and povertyPercent now:
 ```{r}
 cor(cancer_data_fixed$medIncome, cancer_data_fixed$povertyPercent)
 ```
-There is a very strong negative correlation nearly close to -1.0 as expected between medIncome and povertyPercent. This similarity suggests only that they both indicate economic influence on cancer death rate.
+There is a very strong negative correlation nearly close to -1.0 as expected between medIncome and povertyPercent. This similarity suggests only that they both indicate the same economic influence on cancer death rate.
 
-###d) Relationship between death rate and private & public coverage
+###c) Relationship between death rate and private & public coverage
 
 Clearly the affordability of healthcare is a major consideration is the battle against cancer. It is likely that if a person has a higher salary, he will choose to go with Private Health care which is generally regarded to provide better services than Public Health care. we can examine the correlation between these two variables.
 
@@ -350,12 +350,15 @@ cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctPrivateCoverage)
 This does show the negative correlation confirming that deathRates are inversely related to Private Coverage. This can be verified in a plot:
 
 ```{r}
-plot (~ PctPrivateCoverage + deathRate, data = cancer_data_fixed)
-abline(lm(cancer_data_fixed$deathRate ~ cancer_data_fixed$PctPrivateCoverage))
+plot (~ PctPrivateCoverage + deathRate, data = cancer_data_fixed, col="red", xlab="% Coverage")
+abline(lm(cancer_data_fixed$deathRate ~ cancer_data_fixed$PctPrivateCoverage), col="red")
+points (cancer_data_fixed$PctPublicCoverage, cancer_data_fixed$deathRate, col="blue")
+abline(lm(cancer_data_fixed$deathRate ~ cancer_data_fixed$PctPublicCoverage), col="blue")
+legend("topright", legend = c("Private", "Public"), col = c("red", "blue"), pch = c(19,19))
 ```
 
 
-We now examine the relationship between deathRate and Public coverage.
+It is evident above, however, that the relationship with public coverage is quite different and we can now examine the relationship between deathRate and Public coverage:
 ```{r}
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctPublicCoverage)
 ```
@@ -368,14 +371,8 @@ lm(100*cancer_data_fixed$deathRate/mean(cancer_data_fixed$deathRate) ~ cancer_da
 ```
 This indicates that, for example, a 10% greater uptake in private health insurance is associated with a 5.5% reduction in the county's death rate due to cancer.
 
-We could plot this out similar to the one for Private coverage.
 
-```{r}
-plot (~ PctPublicCoverage + deathRate, data = cancer_data_fixed)
-abline(lm(cancer_data_fixed$deathRate ~ cancer_data_fixed$PctPublicCoverage))
-```
-
-###e) Importance of age on incidence rate and death rate
+###d) Importance of age on incidence rate and death rate
 
 Does cancer affect older people much more than younger ones? This might be important so that we can understand whether younger people need to have some sort of coverage so that they don't succumb to cancer.
 
@@ -384,13 +381,19 @@ For this, let's examine incidenceRate of cancer against age.
 ```{r}
 cor(incidenceRate, cancer_data_fixed$MedianAge)
 ```
-There is a very large correlation between incidence rate and median age. It seems that higher the age, the greater there is chance of getting cancer. Let's examine if the deathRates due to cancer are related to MedianAge in any way.
+There is a very large correlation between incidence rate and median age. It seems that higher the age, the greater there is chance of getting cancer. We can quantify this in a useful sense:
+
+```{r}
+lm(incidenceRate ~ cancer_data_fixed$MedianAge)
+```
+
+This reveals that, a county with median age around 50 typically saw twice the cancer cases as one with a median age around 30. The same treatment can be repeated for the deathRate:
 
 ```{r}
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$MedianAge)
 ```
 
-There is almost no correlation between the two variables! Clearly, while a higher age results in a higher likelihood of cancer, age itself is not a factor when it comes to the deathRate. Clearly, once cancer sets in, the death rate itself depends on factors such as coverage and median income.
+There is almost no correlation between the two variables! Clearly, while a county with greater median agetends to have a greater cancer incidence, age itself is not a significant factor when it comes to the deathRate, at least in the insight gained from county level aggregate statistics without the ability to correlate patient outcomes within age brackets.
 
 But it might make sense to examine whether age affects the likelihood of getting private coverage. Perhaps if it is easy for the younger people to get private coverage, that might explain why MedianAge does not correlate well with deathRate. Plotting the two variables out:
 
@@ -398,12 +401,9 @@ But it might make sense to examine whether age affects the likelihood of getting
 plot(~ cancer_data_fixed$MedianAge+cancer_data_fixed$PctPrivateCoverage, 
      xlab = "Age", 
      ylab = "Pct Private Coverage" )
-abline(lm(cancer_data_fixed$PctPrivateCoverage ~ cancer_data_fixed$MedianAge), 
-       xlab = "Age", 
-       ylab = "Pct Private Coverage")
 ```
 
-Clearly, there is almost a flat line above, indicating that age is not a factor in getting private coverage. Perhaps the younger people get covered by their parents and this is one reason for the non-correlation.
+Clearly, there is no linear relationship present above, indicating that age is not a factor in getting private coverage. However, we note that there is a demographic split present at counties with younger median age, strong clustering around middle age (likely when employer provided insurance is available) and then a less varied spread in the older communities.
 
 
 ##4. Analysis of Secondary Effects
@@ -417,7 +417,7 @@ cor(cancer_data_fixed$povertyPercent, cancer_data_fixed$PctWhite)
 cor(cancer_data_fixed$povertyPercent, cancer_data_fixed$PctAsian)
 cor(cancer_data_fixed$povertyPercent, cancer_data_fixed$PctOtherRace)
 ```
-The results are interesting. Blacks seem to be the poorest of all the races. Let's check whether they are also the most vulnerable to cancer deaths.
+The results reveal that the presence of the black race group is positively correlated with higher cancer incidence whilst the white race group is negatively correlated and also, though to a lesser extent the presence of asian race group. This can be compared to the correlation with death rate due to cancer:
 
 ```{r}
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctBlack)
@@ -425,9 +425,9 @@ cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctWhite)
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctAsian)
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctOtherRace)
 ```
-This is indeed so. An important result here is that the government could focus on improving the conditions of Black people and by doing that, cancer death rates could fall.
+This reveals a similar inversion in the correlation for the black race group comapred to others. An important result here is that the government could focus on improving the conditions or, for example, investigating genetic predispositions of members of this group and hence reduce cancer death rates in these counties.
 
-But to be safe, let's also look at whether incidence rate is related to race
+We can repeat such an analysis for the incidence of cancer:
 
 ```{r}
 cor(incidenceRate, cancer_data_fixed$PctBlack)
@@ -436,7 +436,7 @@ cor(incidenceRate, cancer_data_fixed$PctAsian)
 cor(incidenceRate, cancer_data_fixed$PctOtherRace)
 ```
 
-This is a very interesting insight. Whites seem to be more prone to cancer than blacks, yet as we can see, the death rates are higher in Blacks than Whites. This clearly shows that the Blacks seem to be at a disadvantage due to their poverty level.
+This is a very interesting insight and shows that presence of caucasians is positively associated with cancer incidence. This result supports the hypothesis of poverty differentiating access to quality healthcare, but also highlights that difference race groups may be affected by different types of cancer with a specific range of outcomes most typical for each.
 
 
 ###b)How do people choose between public and private coverage
