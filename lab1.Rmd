@@ -100,7 +100,8 @@ sum(cancer_data_filter1$AvgHouseholdSize < 0.1)
 
 
 ```{r}
-cancer_data_fixed = cancer_data_filter1[cancer_data_filter1$MedianAge < 110 & cancer_data_filter1$AvgHouseholdSize >=1, ]
+cancer_data_fixed = cancer_data_filter1[cancer_data_filter1$MedianAge < 110 &
+                                        cancer_data_filter1$AvgHouseholdSize >=1, ]
 nrow(cancer_data_fixed)
 ```
 
@@ -120,9 +121,12 @@ max(cancer_data$PctPublicCoverage + cancer_data$PctPrivateCoverage)
 The same problem exists with the race related information. It doesn't sum to 100% for many counties, however it is always less than 100, and so it appears some people elected not to state their race. Mostly Alaskan counties form the outliers - the predominant race is likely not captured by this survey.
 
 ```{r}
-head(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace, 25)
-min(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
-max(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite + cancer_data$PctOtherRace)
+head(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite +
+       cancer_data$PctOtherRace, 25)
+min(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite +
+      cancer_data$PctOtherRace)
+max(cancer_data$PctAsian + cancer_data$PctBlack + cancer_data$PctWhite +
+      cancer_data$PctOtherRace)
 ```
 
 ####e) Source of marriage data not clear
@@ -196,7 +200,8 @@ summary(incidenceRate)
 The mean and median values are very close indicating a symmetric distribution, which can be verified in a histogram:
 
 ```{r}
-hist(incidenceRate, main = "Incidence Rate of Cancer", xlab = "Incidence Rate per 100,000 people")
+hist(incidenceRate, main = "Incidence Rate of Cancer", 
+     xlab = "Incidence Rate per 100,000 people")
 ```
 
 It is worth noting that in this format the significant outliers noted in averageAnnCount have been eliminated due to the population adjustment. The standard deviation of this quantity is: 
@@ -214,7 +219,8 @@ summary(cancer_data_fixed$deathRate)
 ```
 The Median and Mean are very close indicating a symmetric distribution. Plotting this variable in a histogram:
 ```{r}
-hist(cancer_data_fixed$deathRate, main = "Death Rate due to cancer", xlab = "Death rate per 100,000 people")
+hist(cancer_data_fixed$deathRate, main = "Death Rate due to cancer", 
+     xlab = "Death rate per 100,000 people")
 ```
 
 This shows that on an average 180 people die of cancer while 550 people are diagnosed with cancer for every 100,000 people. This means that nearly 1/3rd of all people who are diagnosed with cancer die within six years of diagnosis. 
@@ -236,7 +242,8 @@ summary(cancer_data_fixed$BirthRate)
 ```
 The mean and median are similar, though the maximum seems to be very high. Plotting the data with a histogram:
 ```{r}
-hist(cancer_data_fixed$BirthRate, main = "Birth Rate Distribution", breaks = 0:22 - 0.5, xlab = "Birth Rate in for 1000 people")
+hist(cancer_data_fixed$BirthRate, main = "Birth Rate Distribution", breaks = 0:22 - 0.5,
+     xlab = "Birth Rate in for 1000 people")
 ```
 Birth rates over 12 seem to be very low in terms of frequency. 
 
@@ -245,7 +252,8 @@ The average birth rate of approximately 5.0 is is questionable since the average
 There is a reasonably useful age spread in the median age of counties, which will allow us to investigate effects of age on cancer incidence. The distribution peaks around middle age as expected and there are few communities with medians at the age-extremes.
 
 ```{r}
-hist(cancer_data_fixed$MedianAge, main = "County Median Age Distribution", xlab = "Median Age")
+hist(cancer_data_fixed$MedianAge, main = "County Median Age Distribution", 
+     xlab = "Median Age")
 ```
 
 ###d) Analyzing how patients are covered by Private and Public Coverage
@@ -253,7 +261,9 @@ hist(cancer_data_fixed$MedianAge, main = "County Median Age Distribution", xlab 
 As mentioned earlier, it seems as if some patients have both Public and Private Coverage, or some have neither. On average however, slightly more than 60% of people have public insurance and slightly less than 40% have private insurance and the degree of variation between counties is not particularly large. Some counties have significant variation, potentially related to emplyoment or economic factors.
 
 ```{r}
-boxplot(cancer_data_fixed$PctPublicCoverage, cancer_data_fixed$PctPrivateCoverage, main = "Public and Private Insurance Coverage Distribution", names = c("Private","Public"), ylab = "Percent")
+boxplot(cancer_data_fixed$PctPublicCoverage, cancer_data_fixed$PctPrivateCoverage, 
+        main = "Public and Private Insurance Coverage Distribution", 
+        names = c("Private","Public"), ylab = "Percent")
 ```
 \newline
 Analyzing Private Coverage further, it is clear that most private coverage is employer provided.
@@ -268,7 +278,10 @@ hist(cancer_data_fixed$PctEmpPrivCoverage / cancer_data_fixed$PctPrivateCoverage
 Further analysis of the race-related information shows that it is definitely incomplete, for example, we can examine the distribution of races and the distribution of the sum of the given categories;
 
 ```{r}
-boxplot(cancer_data$PctWhite, cancer_data$PctBlack, cancer_data$PctAsian, cancer_data$PctOtherRace, cancer_data$PctWhite + cancer_data$PctBlack + cancer_data$PctAsian + cancer_data$PctOtherRace, names = c("White", "Black", "Asian", "Other", "Sum"))
+boxplot(cancer_data$PctWhite, cancer_data$PctBlack, cancer_data$PctAsian,
+        cancer_data$PctOtherRace, cancer_data$PctWhite + cancer_data$PctBlack +
+        cancer_data$PctAsian + cancer_data$PctOtherRace, 
+        names = c("White", "Black", "Asian", "Other", "Sum"))
 ```
 
 There is definitely a predominance of caucasians in the population as expected, but the inconsistency in the sum points to a preference not to specify race in the survey. As it is well known that genetic predispositions to diseases linked to race exist this is problematic for our analysis as some minorities are certainly under-represented. 
@@ -285,7 +298,12 @@ summary(cancer_data_fixed$binnedInc)
 
 The binned income has a problem as the last level is not ordered. We will need to put the last bin first. So we can prepare the data as follows:
 ```{r}
-cancer_data_fixed$binnedInc = factor(cancer_data_fixed$binnedInc, c("[22640, 34218.1]","(34218.1, 37413.8]","(37413.8, 40362.7]","(40362.7, 42724.4]","(42724.4, 45201]","(45201, 48021.6]","(48021.6, 51046.4]","(51046.4, 54545.6]","(54545.6, 61494.5]","(61494.5, 125635]"))
+cancer_data_fixed$binnedInc = factor(cancer_data_fixed$binnedInc, 
+                                     c("[22640, 34218.1]","(34218.1, 37413.8]",
+                                       "(37413.8, 40362.7]","(40362.7, 42724.4]",
+                                       "(42724.4, 45201]","(45201, 48021.6]",
+                                       "(48021.6, 51046.4]","(51046.4, 54545.6]",
+                                       "(54545.6, 61494.5]","(61494.5, 125635]"))
 ```
 
 
@@ -351,7 +369,8 @@ cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctPrivateCoverage)
 This does show the negative correlation confirming that deathRates are inversely related to Private Coverage. This can be verified in a plot:
 
 ```{r}
-plot (~ PctPrivateCoverage + deathRate, data = cancer_data_fixed, col="red", xlab="% Coverage")
+plot (~ PctPrivateCoverage + deathRate, data = cancer_data_fixed, 
+      col="red", xlab="% Coverage")
 abline(lm(cancer_data_fixed$deathRate ~ cancer_data_fixed$PctPrivateCoverage), col="red")
 points (cancer_data_fixed$PctPublicCoverage, cancer_data_fixed$deathRate, col="blue")
 abline(lm(cancer_data_fixed$deathRate ~ cancer_data_fixed$PctPublicCoverage), col="blue")
@@ -368,7 +387,8 @@ There is a very strong positive correlation indicating that death rates in count
 To quantify this we can examine the gain associated with private health insurance uptake:
 
 ```{r}
-lm(100*cancer_data_fixed$deathRate/mean(cancer_data_fixed$deathRate) ~ cancer_data_fixed$PctPrivateCoverage)
+lm(100*cancer_data_fixed$deathRate/mean(cancer_data_fixed$deathRate) 
+   ~ cancer_data_fixed$PctPrivateCoverage)
 ```
 This indicates that, for example, a 10% greater uptake in private health insurance is associated with a 5.5% reduction in the county's death rate due to cancer.
 
@@ -444,18 +464,25 @@ This is a very interesting insight and shows that presence of caucasians is posi
 
 Since private health care coverage appears to have a positive impact on cancer outcomes, it is interesting to investigate the factors driving choice - do people choose private coverage if they are above the poverty level or with some education level? And do they choose to go with public coverage otherwise? We can examine this below:
 ```{r}
-scatterplotMatrix(~ cancer_data_fixed$povertyPercent + cancer_data_fixed$PctPrivateCoverage + cancer_data_fixed$PctPublicCoverage + cancer_data_fixed$PctHS25_Over + + cancer_data_fixed$PctBachDeg25_Over)
+scatterplotMatrix(~ cancer_data_fixed$povertyPercent + 
+                    cancer_data_fixed$PctPrivateCoverage +
+                    cancer_data_fixed$PctPublicCoverage + 
+                    cancer_data_fixed$PctHS25_Over + 
+                    cancer_data_fixed$PctBachDeg25_Over)
 ```
 \newline
 It is evident that people who are below the poverty line or less educated (note the two are interrelated) typically utilise public insurance coverage. In general, this supports the view that economic factors, whether by preventative means or by access to improve treatment via private healthcare lead to better cancer outcomes.
 
-We can follow this by examining education directly in relation to death rate due to cancer. For this purpose we select two variables - percent of people with Bachelor's degrees and people with just High School education (over 25) and observe the correlation to Death rate. For the purposes of exploratory data analysis these are good indicators of the education level in the age groups with greatest cancer incidence.
+We can follow this by examining education directly in relation to death rate due to cancer. For this purpose we select two variables - percent of people with Bachelor's degrees and people with just High School education (over 25) and observe the correlation to Death rate. Here the assumption is that these represent the highest educational degrees completed by the people. For the purposes of exploratory data analysis these are good indicators of the education level in the age groups.
+
 ```{r}
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctBachDeg25_Over)
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctHS25_Over)
 ```
 
-Curiously, there is a positive correlation between completion of high school and cancer death rate, but this most likely is created by the influence of aged populations and that nearly all people have completed high school - it is presumed that this variable is the percentage of population who are both high school graduates and over 25 and not those who are high school graduates given they are over 25. Therefore, this quantity is not useful for our analysis. The results coming from the inversion of the correlation seem intuitive for the case of those with a Bachelor's degree; if you have higher education, you tend to have better quality of life and economic position and hence cancer outcome. It could be considered also that higher education influences employement, and employment will result in private coverage. Let's examine the relationship between employment and education to be sure this is the case.
+There is definitely a significant positive correlation between death rate and highest education being HighSchool. And if the education is higher, it seems like deathRate falls.
+This is likely because higher education would lead to better employment, which could result in private coverage, and better means to fight cancer. Let's examine the relationship between employment and education to be sure this is the case.
+
 ```{r}
 cor(cancer_data_fixed$PctEmployed16_Over, cancer_data_fixed$PctBachDeg25_Over, use = "complete.obs")
 cor(cancer_data_fixed$PctEmployed16_Over, cancer_data_fixed$PctHS25_Over, use = "complete.obs")
@@ -499,7 +526,8 @@ Average household size ranges from 1.86 through 4 people per household after fil
 Let's plot deathRate against the number of people in a boxplot to see the correlation.
 
 ```{r}
-HouseholdSize_bin = cut(cancer_data_fixed$AvgHouseholdSize, breaks = c(1, 2, 3, 4, Inf))
+HouseholdSize_bin = cut(cancer_data_fixed$AvgHouseholdSize, 
+                        breaks = c(1, 2, 3, 4, Inf))
 boxplot( deathRate ~ HouseholdSize_bin , data = cancer_data_fixed,
         main = "Death rate vs Average Household size",
         xlab = "Average Household Size",
