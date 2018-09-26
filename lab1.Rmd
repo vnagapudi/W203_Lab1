@@ -255,6 +255,7 @@ As mentioned earlier, it seems as if some patients have both Public and Private 
 ```{r}
 boxplot(cancer_data_fixed$PctPublicCoverage, cancer_data_fixed$PctPrivateCoverage, main = "Public and Private Insurance Coverage Distribution", names = c("Private","Public"), ylab = "Percent")
 ```
+\newline
 Analyzing Private Coverage further, it is clear that most private coverage is employer provided.
 ```{r}
 hist(cancer_data_fixed$PctEmpPrivCoverage / cancer_data_fixed$PctPrivateCoverage,
@@ -439,32 +440,31 @@ cor(incidenceRate, cancer_data_fixed$PctOtherRace)
 This is a very interesting insight and shows that presence of caucasians is positively associated with cancer incidence. This result supports the hypothesis of poverty differentiating access to quality healthcare, but also highlights that difference race groups may be affected by different types of cancer with a specific range of outcomes most typical for each.
 
 
-###b)How do people choose between public and private coverage
+###b) Factors affecting choice of insurance coverage
 
-Just so that we understand people's choices a bit more, do they choose private coverage if they are above the poverty level? And do they choose to go with public coverage otherwise? We can examine this using some plots
+Since private health care coverage appears to have a positive impact on cancer outcomes, it is interesting to investigate the factors driving choice - do people choose private coverage if they are above the poverty level or with some education level? And do they choose to go with public coverage otherwise? We can examine this below:
 ```{r}
-scatterplotMatrix(~ cancer_data_fixed$povertyPercent + cancer_data_fixed$PctPrivateCoverage + cancer_data_fixed$PctPublicCoverage)
+scatterplotMatrix(~ cancer_data_fixed$povertyPercent + cancer_data_fixed$PctPrivateCoverage + cancer_data_fixed$PctPublicCoverage + cancer_data_fixed$PctHS25_Over + + cancer_data_fixed$PctBachDeg25_Over)
 ```
-Clearly, people who are below the poverty line seem to go with public coverage. In general, this means that if median incomes go up, then people would buy private insurance and survive cancer. 
+\newline
+It is evident that people who are below the poverty line or less educated (note the two are interrelated) typically utilise public insurance coverage. In general, this supports the view that economic factors, whether by preventative means or by access to improve treatment via private healthcare lead to better cancer outcomes.
 
-###c) Effect of education on median incomes
-It seems intuitive that better education would leave to higher median incomes, and that would in turn result in private coverage, and reduced death rates. 
-
-Let's examine this correlation. We can choose a couple of related variables - people with Bachelors degree and people with just HighSchool and observe the correlation to Death rate.
+We can follow this by examining education directly in relation to death rate due to cancer. For this purpose we select two variables - percent of people with Bachelor's degrees and people with just High School education (over 25) and observe the correlation to Death rate. For the purposes of exploratory data analysis these are good indicators of the education level in the age groups with greatest cancer incidence.
 ```{r}
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctBachDeg25_Over)
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctHS25_Over)
 ```
-The results seem intuitive. If you have higher education, you likely don't succumb to cancer. Higher education should be tied to employment, and employment will result in private coverage. Let's examine the relationship between employment and education to be sure this is the case.
+
+Curiously, there is a positive correlation between completion of high school and cancer death rate, but this most likely is created by the influence of aged populations and that nearly all people have completed high school - it is presumed that this variable is the percentage of population who are both high school graduates and over 25 and not those who are high school graduates given they are over 25. Therefore, this quantity is not useful for our analysis. The results coming from the inversion of the correlation seem intuitive for the case of those with a Bachelor's degree; if you have higher education, you tend to have better quality of life and economic position and hence cancer outcome. It could be considered also that higher education influences employement, and employment will result in private coverage. Let's examine the relationship between employment and education to be sure this is the case.
 ```{r}
 cor(cancer_data_fixed$PctEmployed16_Over, cancer_data_fixed$PctBachDeg25_Over, use = "complete.obs")
 cor(cancer_data_fixed$PctEmployed16_Over, cancer_data_fixed$PctHS25_Over, use = "complete.obs")
 ```
-In this case, we had to use "complete.obs" since there were some invalid observations. As we can clearly see, having a bachelor's degree seems to be very critical to being employed.
+In this case, we had to use "complete.obs" since there were some invalid observations. As we can clearly see, having a Bachelor's degree seems to be positively correlated to being employed, supporting our chain of reasoning.
 
 ###d) Does being married help with reduction of deathRates?
 
-What one can intuit is that married people might have better coverage than unmarried ones, and that could lead to reduced deathRates. Let's examine this relationship. First off, what is the correlation between marriage and coverage?
+What one can intuit is that married people might have better coverage than unmarried ones, and that could lead to reduced deathRates. Let's examine this relationship. Firstly, what is the correlation between marriage and coverage?
 
 ```{r}
 cor(cancer_data_fixed$PctMarriedHouseholds, cancer_data_fixed$PctPrivateCoverage)
@@ -478,14 +478,15 @@ boxplot(PctMarriedHouseholds ~ binnedInc, data = cancer_data_fixed,
         xlab = "Median Income bins",
         ylab = "Married Households")
 ```
-Clearly, being married helps since the median income is higher and results in better treatment.
+\newline
+We note that the expected correlation between presence of married households and income exists.
 
-So that we complete this picture, if we compare deathRates against MarriedHouseholds, there should be a negative correlation. Let's check:
+So that we complete this picture, if we compare deathRates against MarriedHouseholds, there should be a negative correlation:
 ```{r}
 cor(cancer_data_fixed$deathRate, cancer_data_fixed$PctMarriedHouseholds)
 ```
 
-It is indeed so. DeathRates are lower when patients are married, as seen above, due to higher median incomes.
+It is indeed so; DeathRates are lower when patients are married, as seen above, most probably due to higher median incomes allowing better treatment outcomes or improved lifestyle/preventative measures taken by married couples. Further research would be required to establish the specific causality.
 
 ###d) Does size of household have a bearing on deathRates?
 Let's examine the size of households now.
@@ -493,8 +494,7 @@ Let's examine the size of households now.
 summary(cancer_data_fixed$AvgHouseholdSize)
 ```
 
-
-It looks like there are anywhere from 1.86 through 4 people per household. This is now correct after we discarded a number of very low values which did not make sense.
+Average household size ranges from 1.86 through 4 people per household after filtering for extremely low values which were implausible as an average of integers.
 
 Let's plot deathRate against the number of people in a boxplot to see the correlation.
 
@@ -506,7 +506,7 @@ boxplot( deathRate ~ HouseholdSize_bin , data = cancer_data_fixed,
         ylab = "Death Rate")
 ```
 
-The higher the household size, the lesser the deathRate. This is likely because the median income is higher in the case of the bigger households. Let's check if this is the case.
+In communities with greater average household size, we observe a lesser the death rate. It could be that the median income is higher in the case of the bigger households and we can investigate:
 
 ```{r}
 boxplot(AvgHouseholdSize ~ binnedInc, data = cancer_data_fixed, 
@@ -515,7 +515,7 @@ boxplot(AvgHouseholdSize ~ binnedInc, data = cancer_data_fixed,
         ylab = "Average household size")
 ```
 
-There is an increase in median income as the average household size increases, but only slightly so.
+There is an increase in median income as the average household size increases, but only slightly so and it is likely that the causality here is due to greater income enabling the economics of having a larger family. The correlation with death rate may instead be explained due to the typical presence of married couples in larger households and the presence of children in large households, and per our earlier investigations, a shift towards younger age groups is expected to result in lower incidence of cancer.
 
 
 ##5. Conclusion
