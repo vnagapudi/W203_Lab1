@@ -431,7 +431,11 @@ Clearly, there is no linear relationship present above, indicating that age is n
 ```{r}
 geo_df = cancer_data_fixed[,c("Geography", "deathRate")]
 geo_df$incidenceRate = incidenceRate
-head(geo_df)
+geo_df$Geography[147] = NA
+library(stringr)
+geo_df$state = factor(str_split_fixed(as.character(geo_df$Geography), ", ", 2)[,2])
+state_df = aggregate(cbind(incidenceRate, deathRate) ~ state, data=geo_df, FUN=mean)
+state_df[order(-state_df$deathRate),]
 ```
 
 
