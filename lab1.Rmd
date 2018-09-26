@@ -406,6 +406,14 @@ plot(~ cancer_data_fixed$MedianAge+cancer_data_fixed$PctPrivateCoverage,
 
 Clearly, there is no linear relationship present above, indicating that age is not a factor in getting private coverage. However, we note that there is a demographic split present at counties with younger median age, strong clustering around middle age (likely when employer provided insurance is available) and then a less varied spread in the older communities.
 
+###e) Variation of cancer incidence / outcomes geographically
+
+```{r}
+geo_df = cancer_data_fixed[,c("Geography", "deathRate")]
+geo_df$incidenceRate = incidenceRate
+head(geo_df)
+```
+
 
 ##4. Analysis of Secondary Effects
 
