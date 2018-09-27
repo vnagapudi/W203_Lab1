@@ -199,9 +199,10 @@ summary(incidenceRate)
 
 The mean and median values are very close indicating a symmetric distribution, which can be verified in a histogram:
 
-```{r}
+```{r fig.height = 3.5}
 hist(incidenceRate, main = "Incidence Rate of Cancer", 
-     xlab = "Incidence Rate per 100,000 people")
+     xlab = "Incidence Rate per 100,000 people", 
+     cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
 It is worth noting that in this format the significant outliers noted in averageAnnCount have been eliminated due to the population adjustment. The standard deviation of this quantity is: 
@@ -218,9 +219,10 @@ Now looking at the key outcome variable deathRate and summarizing it:
 summary(cancer_data_fixed$deathRate)
 ```
 The Median and Mean are very close indicating a symmetric distribution. Plotting this variable in a histogram:
-```{r}
-hist(cancer_data_fixed$deathRate, main = "Death Rate due to cancer", 
-     xlab = "Death rate per 100,000 people")
+```{r fig.height = 3.5}
+hist(cancer_data_fixed$deathRate, main = "Death Rate (due to cancer)", 
+     xlab = "Death rate per 100,000 people",
+     cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
 This shows that on an average 180 people die of cancer while 550 people are diagnosed with cancer for every 100,000 people. This means that nearly 1/3rd of all people who are diagnosed with cancer die within six years of diagnosis. 
@@ -241,19 +243,21 @@ For completeness, the birthRate is analysed here, though it seems very unlikely 
 summary(cancer_data_fixed$BirthRate)
 ```
 The mean and median are similar, though the maximum seems to be very high. Plotting the data with a histogram:
-```{r}
+```{r fig.height = 3.5}
 hist(cancer_data_fixed$BirthRate, main = "Birth Rate Distribution", breaks = 0:22 - 0.5,
-     xlab = "Birth Rate in for 1000 people")
+     xlab = "Birth Rate in for 1000 people",
+     cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
+\newline
 Birth rates over 12 seem to be very low in terms of frequency. 
 
 The average birth rate of approximately 5.0 is is questionable since the average birth rate in the USA is around 12.2 per 1,000 people. It is unclear why these counties have a low birth rate that is more than 60% lower than national average. Perhaps there is a certain type of cancer that causes lower birth rates? This anomaly would benefit from further investigation.
 
 There is a reasonably useful age spread in the median age of counties, which will allow us to investigate effects of age on cancer incidence. The distribution peaks around middle age as expected and there are few communities with medians at the age-extremes.
 
-```{r}
+```{r fig.height = 3.5}
 hist(cancer_data_fixed$MedianAge, main = "County Median Age Distribution", 
-     xlab = "Median Age")
+     xlab = "Median Age", cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
 ###d) Analyzing how patients are covered by Private and Public Coverage
@@ -267,10 +271,11 @@ boxplot(cancer_data_fixed$PctPublicCoverage, cancer_data_fixed$PctPrivateCoverag
 ```
 \newline
 Analyzing Private Coverage further, it is clear that most private coverage is employer provided.
-```{r}
+```{r fig.height = 3.5}
 hist(cancer_data_fixed$PctEmpPrivCoverage / cancer_data_fixed$PctPrivateCoverage,
      main = "Percentage of Employer Provided Private Coverage", 
-     xlab = "Percentage Employer provided Private coverage")
+     xlab = "Percentage Employer provided Private coverage",
+     cex.main = 0.9, cex.lab = 0.9, cex.axis = 0.9)
 ```
 
 ###e) Analyzing Race related information
@@ -313,10 +318,11 @@ cancer_data_fixed$binnedInc = factor(cancer_data_fixed$binnedInc,
 We now examine how the key outcome variable deathRate is related to other variables. First, let's see if there is a correlation between the incidence rate and death rates. Intuitively, it seems to make sense that the higher the incidence rate, the higher the death rate should be, however we noted a variation in the distributions previously.  
 
 ```{r}
-plot(incidenceRate, cancer_data_fixed$deathRate)
+plot(incidenceRate, cancer_data_fixed$deathRate, ylab = "Count / 100,000", 
+     main="Death Rate vs. Incidence Rate")
 ```
 
-There is a general trend that higher death rate due to cancer occurs where there is a higher incidence rate, but the significant variability observed indicates that there are other effects at play which are independent of the two events. For example, environmental or race-prevalance effects may influence cancer incidence but health insurance or poverty effects may have a greater role in death due to variability of treatment outcomes. We can quantify this with the correlation coefficient:
+The plot above shows a general trend that higher death rate due to cancer occurs where there is a higher incidence rate, but the significant variability observed indicates that there are other effects at play which are independent of the two events. For example, environmental or race-prevalance effects may influence cancer incidence but health insurance or poverty effects may have a greater role in death due to variability of treatment outcomes. We can quantify the quality of this with the correlation coefficient:
 
 ```{r}
 cor(incidenceRate, cancer_data_fixed$deathRate)
@@ -337,7 +343,7 @@ Let's now figure the correlation between deathRate and median income bins using 
 ```{r}
 boxplot(deathRate ~ binnedInc, data = cancer_data_fixed, 
         main = "Death rate vs Median Income bins",
-        xlab = "Median Income bins",
+        xlab = "Median Income (binned)",
         ylab = "Death Rate")
 ```
 As can be clearly seen, the higher the income, the lower is the death rate. This indicates that if the county is very poor on an average, then it is likely to have a higher death rate. We test this hypothesis by comparing deathRate against povertyPercent. 
@@ -416,28 +422,57 @@ cor(cancer_data_fixed$deathRate, cancer_data_fixed$MedianAge)
 
 There is almost no correlation between the two variables! Clearly, while a county with greater median agetends to have a greater cancer incidence, age itself is not a significant factor when it comes to the deathRate, at least in the insight gained from county level aggregate statistics without the ability to correlate patient outcomes within age brackets.
 
-But it might make sense to examine whether age affects the likelihood of getting private coverage. Perhaps if it is easy for the younger people to get private coverage, that might explain why MedianAge does not correlate well with deathRate. Plotting the two variables out:
+But it might make sense to examine whether age affects the likelihood of getting private coverage. Perhaps if it is easy for the younger people to get private coverage, that might explain why MedianAge does not correlate well with deathRate. Plotting the two variables against eachother:
 
-```{r}
-plot(~ cancer_data_fixed$MedianAge+cancer_data_fixed$PctPrivateCoverage, 
-     xlab = "Age", 
-     ylab = "Pct Private Coverage" )
+```{r fig.height = 3.5}
+plot(cancer_data_fixed$MedianAge, cancer_data_fixed$PctPrivateCoverage, 
+     ylab = "% Private Coverage", xlab = "Age", cex.axis = 0.9)
 ```
 
 Clearly, there is no linear relationship present above, indicating that age is not a factor in getting private coverage. However, we note that there is a demographic split present at counties with younger median age, strong clustering around middle age (likely when employer provided insurance is available) and then a less varied spread in the older communities.
 
 ###e) Variation of cancer incidence / outcomes geographically
 
+Here we examine the distribution of cancer incidence and death rate, aggregated on a state basis. The motivation for doing this is to find out if there is a large disparity in cancer cases (per capita) across the USA as well as to observe how patterns at state-level compare to the correlations identified earlier.
+
+We have aggregated and averaged the counties within each state, not that a weighting for county population has not been performed for the income data. Looking at the distributions of the cancer incidence rate and death rate due to cancer in the box plot below, we note a skewed incidence rate distribution and a nearly symmetric death rate death rate distribution. The difference may be in quality of diagnosis or probability of occurence of different types of cancer (with different mortality rates) being varied between states.
+
 ```{r}
-geo_df = cancer_data_fixed[,c("Geography", "deathRate")]
+geo_df = cancer_data_fixed[,c("Geography", "deathRate", "medIncome")]
 geo_df$incidenceRate = incidenceRate
 geo_df$Geography[147] = NA
 library(stringr)
 geo_df$state = factor(str_split_fixed(as.character(geo_df$Geography), ", ", 2)[,2])
-state_df = aggregate(cbind(incidenceRate, deathRate) ~ state, data=geo_df, FUN=mean)
-state_df[order(-state_df$deathRate),]
+state_df = aggregate(cbind(incidenceRate, deathRate, medIncome) ~ state, data=geo_df, FUN=mean)
+boxplot(state_df$incidenceRate, state_df$deathRate, names = c("Incidence Rate", "Death Rate"), 
+          xlab="Mean by State", ylab="Count/100,000", main = "State Level Distribution")
+```
+We can then investigate the states with the greatest cancer incidence in the chart below. For the top 15 states the variation in incidence rate is not large, except in the case of Maine where some factor may warrant further research.
+
+```{r fig.height=3.5}
+top_inc = state_df[order(-state_df$incidenceRate),]
+barplot(top_inc$incidenceRate[1:15], names.arg=top_inc$state[1:15], las=2, 
+        ylab="Count/100000", main="Top 15 by Cancer Incidence", 
+        cex.main = 0.9, cex.lab = 0.9, cex.names = 0.7, cex.axis = 0.9)
 ```
 
+A similar occurenced is observed below where the top 15 states for cancer death rate are identified. Kentucky appears to have worse outcomes but relatively consistent incidence, and would again warrant further investigation. What is most notable is the composition of the two lists - in more cases than not the states with high incidence do not appear to also have a high death rate. This once again supports the notion that there are likely difference demographic forces at work in incidence as compared to death, which is highly dependent on the quality of healthcare.
+
+```{r fig.height=3.5}
+top_death = state_df[order(-state_df$deathRate),]
+barplot(top_death$deathRate[1:15], names.arg=top_death$state[1:15], las=2, 
+        ylab="Count/100000", main="Top 15 by Cancer Death Rate",
+        cex.main = 0.9, cex.lab = 0.9, cex.names = 0.7, cex.axis = 0.9)
+```
+We have noted correlations with insurance coverage/income and death rate, so it is instructive to investigate the states with highest median income:
+
+```{r fig.height=3.5}
+top_income = state_df[order(-state_df$medIncome),]
+barplot(top_income$medIncome[1:15], names.arg=top_income$state[1:15], las=2,
+        ylab="$", main="Top 15 by Median Income", 
+        cex.main = 0.9, cex.lab = 0.9, cex.names = 0.6, cex.axis = 0.9)
+```
+Significantly, none of these except Alaska were present in the top 15 by death rate, which is consistent with our hypothesis.
 
 ##4. Analysis of Secondary Effects
 
@@ -475,7 +510,7 @@ This is a very interesting insight and shows that presence of caucasians is posi
 ###b) Factors affecting choice of insurance coverage
 
 Since private health care coverage appears to have a positive impact on cancer outcomes, it is interesting to investigate the factors driving choice - do people choose private coverage if they are above the poverty level or with some education level? And do they choose to go with public coverage otherwise? We can examine this below:
-```{r}
+```{r fig.height=4.5}
 scatterplotMatrix(~ cancer_data_fixed$povertyPercent + 
                     cancer_data_fixed$PctPrivateCoverage +
                     cancer_data_fixed$PctPublicCoverage + 
@@ -541,9 +576,9 @@ Let's plot deathRate against the number of people in a boxplot to see the correl
 HouseholdSize_bin = cut(cancer_data_fixed$AvgHouseholdSize, 
                         breaks = c(1, 2, 3, 4, Inf))
 boxplot( deathRate ~ HouseholdSize_bin , data = cancer_data_fixed,
-        main = "Death rate vs Average Household size",
+        main = "Death Rate vs Average Household size",
         xlab = "Average Household Size",
-        ylab = "Death Rate")
+        ylab = "Count / 100,000")
 ```
 
 In communities with greater average household size, we observe a lesser the death rate. It could be that the median income is higher in the case of the bigger households and we can investigate:
@@ -552,7 +587,7 @@ In communities with greater average household size, we observe a lesser the deat
 boxplot(AvgHouseholdSize ~ binnedInc, data = cancer_data_fixed, 
         main = "Average household size vs Median Income bins",
         xlab = "Median Income bins",
-        ylab = "Average household size")
+        ylab = "Average Household Size")
 ```
 
 There is an increase in median income as the average household size increases, but only slightly so and it is likely that the causality here is due to greater income enabling the economics of having a larger family. The correlation with death rate may instead be explained due to the typical presence of married couples in larger households and the presence of children in large households, and per our earlier investigations, a shift towards younger age groups is expected to result in lower incidence of cancer.
