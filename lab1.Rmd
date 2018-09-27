@@ -559,3 +559,29 @@ There is an increase in median income as the average household size increases, b
 
 
 ##5. Conclusion
+
+As we mentioned in the introduction, what we expected out of the exploratory data analysis of the Cancer dataset was to enable policy makers achieve actionable insights into how to reduce cancer mortality rates. We believe we managed to get several interesting insights that we list below:
+
+###1) Public coverage falls woefully short in addressing cancer mortality rates
+One of the most significant insights was that cancer mortality rates across different geographies were definitely higher when patients were only covered public insurance. The sample set of patients that could afford private coverage definitely benefited from reduced mortality rates. We do believe that policy makers have to attempt a significant overhaul of public coverage to address this fairly serious problem.
+
+###2) Winning against cancer is all about affordable treatments
+
+While we found that being richer does not prevent one from falling prey to cancer, the chances of winning the cancer battle definitely depend on the patient's ability to afford the superior private coverage to battle and win against (curable forms of) cancer. There is a convincing correlation between mortality rates and median incomes that clearly calls for at least a couple of actions: 
+
+  a. The government needs to be able to subsidise cancer drugs so poorer people can afford them. 
+  
+  b. Perhaps drug companies can be incentivised to come up with innovations that can fight cancer at a reduced cost. This could require a complete overhaul of health insurance in the USA
+  
+###3) Education clearly helps in the fight against cancer
+We found that the more highly educated you are, the better your chances are to find higher paying jobs that get you ready to battle cancer (or likely other difficult diseases) through private coverage. Clearly the affordability of higher educational degrees plays an important role in the fight against cancer. This insight could potentially enable our policy makers to offer incentives, loans and other means to help people educate themselves to get to better paying jobs.
+
+###4) Cancer mortality rates can improve by improving conditions of certain demographics
+
+We found that the incidence of cancer is higher in certain races (such as African-Americans), and as well, these races are certainly backward educationally and economically. The policy makers can look into uplifting the conditions of these demographies so as to reduce cancer mortality rates
+
+###5) Personalized data science could be the next needed step to win against cancer
+
+While we managed to derive some fairly useful insights that can inform policy makers and others reduce cancer mortality rates, we do believe that the fight against cancer can be won only through very deep personalization of cancer treatments using data science. While the affordability of these personalized treatments will still be questionable, we do believe that such personalization is what is needed to derive even greater insights into cancer mortality rates.
+
+The cancer data set we used definitely suffers from this lack of personal data. By averaging the insights over people in a county, several crucial observations were clearly lost. For example, did a patient die because he had incurable cancer, or did he die because he couldn't afford health care? Or perhaps the cancer was never detected? Was the patient perhaps unemployed but got insurance from his partner? We think that devising surveys to gather more personal information could be the next step in data gathering to achieve better insights into fighting cancer mortality rates.
